@@ -157,7 +157,7 @@
             const messageText = document.getElementById('messageText');
 
             // IMPORTANT: Remplacez cette URL par l'URL de votre propre script Google Apps
-            const scriptURL = 'VOTRE_URL_APPS_SCRIPT_ICI';
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbxSvAuMWRjMqqJa7U9iv94GiIVfvg5X59-mSjVg8VMxIT1Vr54jWpQq_2n0ez_YT8n-/exec';
 
             function toggleExpenseTypeField() {
                 const selectedOperation = document.querySelector('input[name="operationType"]:checked');
@@ -180,7 +180,7 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                if (scriptURL === 'VOTRE_URL_APPS_SCRIPT_ICI') {
+                if (scriptURL === 'https://script.google.com/macros/s/AKfycbxSvAuMWRjMqqJa7U9iv94GiIVfvg5X59-mSjVg8VMxIT1Vr54jWpQq_2n0ez_YT8n-/exec') {
                     showMessage('Veuillez configurer l\'URL du script Google Apps dans le code HTML.', 'error');
                     return;
                 }
