@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire : Livre de caisse – ONG Dankola</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hidden-field {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            /* Correction : Combinaison des transitions en une seule ligne */
+            transition: max-height 0.5s ease-out, opacity 0.3s ease-out;
+        }
+        .visible-field {
+            max-height: 200px; /* Adjust as needed */
+            opacity: 1;
+            transition: max-height 0.5s ease-in, opacity 0.5s 0.1s ease-in;
+        }
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Livre de caisse – ONG Dankola</h1>
+            <p class="text-gray-600 mt-2">Enregistrez une nouvelle transaction (dépense ou encaissement).</p>
+        </div>
+
+        <form id="cashbookForm" name="submit-to-google-sheet" class="space-y-6">
+
+            <!-- Type d’opération -->
+            <!-- Correction : Utilisation de fieldset et legend pour l'accessibilité -->
+            <fieldset>
+                <legend class="block text-sm font-medium text-gray-700">Type d’opération <span class="text-red-500">*</span></legend>
+                <div class="mt-2 flex space-x-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="operationType" value="Dépense" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" required>
+                        <span class="ml-2 text-gray-700">Dépense (sortie)</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="operationType" value="Encaissement" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" required>
+                        <span class="ml-2 text-gray-700">Encaissement (entrée)</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- Date de la transaction -->
+            <div>
+                <label for="transactionDate" class="block text-sm font-medium text-gray-700">Date de la transaction <span class="text-red-500">*</span></label>
+                <input type="date" id="transactionDate" name="transactionDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Montant -->
+            <div>
+                <label for="amount" class="block text-sm font-medium text-gray-700">Montant (en GNF) <span class="text-red-500">*</span></label>
+                <input type="number" id="amount" name="amount" placeholder="Ex: 50000" required min="1" step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Description / Objet -->
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Description / Objet de la transaction <span class="text-red-500">*</span></label>
+                <select id="description" name="description" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="" disabled selected>Sélectionnez une option...</option>
+                    <option value="Remboursement">Remboursement</option>
+                    <option value="Administratif">Administratif (frais de bureau, fournitures, etc.)</option>
+                    <option value="Marketing & Communication">Marketing & Communication (affiches, flyers, pub)</option>
+                    <option value="Transport & Carburant">Transport & Carburant</option>
+                    <option value="Nourriture & Réunions">Nourriture & Réunions (collations, repas)</option>
+                    <option value="Hébergement">Hébergement (logement, hôtel)</option>
+                    <option value="Achat de matériel">Achat de matériel (équipement divers)</option>
+                    <option value="Entretien & Maintenance">Entretien & Maintenance</option>
+                    <option value="Services extérieurs">Services extérieurs (prestataires, consultants)</option>
+                    <option value="Frais bancaires ou Mobile Money">Frais bancaires ou Mobile Money</option>
+                    <option value="Salaires & Indemnités">Salaires & Indemnités</option>
+                    <option value="Événements & Formations">Événements & Formations</option>
+                    <option value="Urgence / Divers">Urgence / Divers</option>
+                    <option value="Autre">Autre (à préciser en remarque)</option>
+                </select>
+            </div>
+            
+            <!-- This field is only shown for expenses -->
+            <div id="expenseTypeContainer" class="hidden-field">
+                <label for="expenseType" class="block text-sm font-medium text-gray-700">Type de transaction (si dépense) <span class="text-red-500">*</span></label>
+                <select id="expenseType" name="expenseType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="" disabled selected>Sélectionnez une option...</option>
+                    <option value="Espèces">Espèces</option>
+                    <option value="Mobile Money">Mobile Money</option>
+                    <option value="Virement bancaire">Virement bancaire</option>
+                    <option value="Chèque">Chèque</option>
+                </select>
+            </div>
+
+            <!-- Nom du bénéficiaire / destinataire -->
+            <div>
+                <label for="beneficiary" class="block text-sm font-medium text-gray-700">Nom du bénéficiaire / destinataire <span class="text-red-500">*</span></label>
+                <select id="beneficiary" name="beneficiary" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="" disabled selected>Sélectionnez un nom...</option>
+                    <option value="Aissatou Camara">Aissatou Camara</option>
+                    <option value="Kaba Karfala Konaté">Kaba Karfala Konaté</option>
+                    <option value="Bakary Konaté">Bakary Konaté</option>
+                    <option value="Mamady Keita">Mamady Keita</option>
+                    <option value="Autre">Autre (à préciser en remarque)</option>
+                </select>
+            </div>
+
+            <!-- Remarques supplémentaires -->
+            <div>
+                <label for="remarks" class="block text-sm font-medium text-gray-700">Remarques supplémentaires</label>
+                <textarea id="remarks" name="remarks" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Ex: Numéro de reçu, justificatif, contexte..."></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4">
+                <button type="submit" id="submitButton" class="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400">
+                    <span id="buttonText">Enregistrer la transaction</span>
+                    <div id="buttonLoader" class="loader hidden ml-3"></div>
+                </button>
+            </div>
+        </form>
+        
+        <!-- Success/Error Messages -->
+        <div id="messageContainer" class="hidden mt-6 p-4 rounded-md">
+            <p id="messageText"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('cashbookForm');
+            const expenseTypeContainer = document.getElementById('expenseTypeContainer');
+            const expenseTypeSelect = document.getElementById('expenseType');
+            const operationTypeRadios = document.querySelectorAll('input[name="operationType"]');
+            
+            const submitButton = document.getElementById('submitButton');
+            const buttonText = document.getElementById('buttonText');
+            const buttonLoader = document.getElementById('buttonLoader');
+
+            const messageContainer = document.getElementById('messageContainer');
+            const messageText = document.getElementById('messageText');
+
+            // IMPORTANT: Remplacez cette URL par l'URL de votre propre script Google Apps
+            const scriptURL = 'VOTRE_URL_APPS_SCRIPT_ICI';
+
+            function toggleExpenseTypeField() {
+                const selectedOperation = document.querySelector('input[name="operationType"]:checked');
+                if (selectedOperation && selectedOperation.value === 'Dépense') {
+                    expenseTypeContainer.classList.remove('hidden-field');
+                    expenseTypeContainer.classList.add('visible-field');
+                    expenseTypeSelect.required = true;
+                } else {
+                    expenseTypeContainer.classList.remove('visible-field');
+                    expenseTypeContainer.classList.add('hidden-field');
+                    expenseTypeSelect.required = false;
+                    expenseTypeSelect.value = '';
+                }
+            }
+
+            operationTypeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleExpenseTypeField);
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (scriptURL === 'VOTRE_URL_APPS_SCRIPT_ICI') {
+                    showMessage('Veuillez configurer l\'URL du script Google Apps dans le code HTML.', 'error');
+                    return;
+                }
+
+                submitButton.disabled = true;
+                buttonText.classList.add('hidden');
+                buttonLoader.classList.remove('hidden');
+
+                fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                    .then(response => {
+                        console.log('Success!', response);
+                        showMessage('Succès ! La transaction a été enregistrée.', 'success');
+                        form.reset();
+                        toggleExpenseTypeField();
+                    })
+                    .catch(error => {
+                        console.error('Error!', error.message);
+                        showMessage('Erreur ! La transaction n\'a pas pu être enregistrée. Veuillez réessayer.', 'error');
+                    })
+                    .finally(() => {
+                        submitButton.disabled = false;
+                        buttonText.classList.remove('hidden');
+                        buttonLoader.classList.add('hidden');
+                    });
+            });
+
+            function showMessage(message, type) {
+                messageContainer.classList.remove('hidden', 'bg-green-100', 'border-green-400', 'text-green-700', 'bg-red-100', 'border-red-400', 'text-red-700');
+                if (type === 'success') {
+                    messageContainer.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+                } else {
+                    messageContainer.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                }
+                messageText.innerHTML = `<strong>${type === 'success' ? 'Succès !' : 'Erreur !'}</strong> ${message}`;
+                
+                setTimeout(() => {
+                    messageContainer.classList.add('hidden');
+                }, 5000);
+            }
+        });
+    </script>
+
+</body>
+</html>
