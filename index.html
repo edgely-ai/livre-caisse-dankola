@@ -184,12 +184,6 @@
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-
-                if (scriptURL === 'https://script.google.com/macros/s/AKfycbxSvAuMWRjMqqJa7U9iv94GiIVfvg5X59-mSjVg8VMxIT1Vr54jWpQq_2n0ez_YT8n-/exec') {
-                    showMessage('Veuillez configurer l\'URL du script Google Apps dans le code HTML.', 'error');
-                    return;
-                }
-
                 submitButton.disabled = true;
                 buttonText.classList.add('hidden');
                 buttonLoader.classList.remove('hidden');
